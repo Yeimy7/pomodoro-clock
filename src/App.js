@@ -5,38 +5,41 @@ const App = () => {
   const [session, setSession] = useState(25);
   const [breaking, setBreaking] = useState(5);
 
-
   let inter;
-  let min = session-1;
-  let s = 60;
+  let min = session;
+  let s = 0;
   let sw = true;
   let sw2 = true;
 
   const titlee = document.getElementById('timer-label');
 
   const handleClock = () => {
+    let a = document.getElementById('beep');
     if (sw2) {
       let clock = document.getElementById('time-left');
       inter = setInterval(() => {
-        
-        if (s === 0) {
-          s = 60;
-          min--;
-          if (min < 0) {
-            if (sw) {
-              min = breaking-1;
-              titlee.innerText = 'Break';
-            } else {
-              min = session-1;
-              titlee.innerText = 'Session';
-            }
-            sw = !sw;
-          } 
-        }
-        s--;
         let m = min < 10 ? '0' + min : min;
         let ss = s < 10 ? '0' + s : s;
         clock.innerText = m + ':' + ss;
+        s--;
+        if (s < 0) {
+          s = 59;
+          min--;
+          if (min < 0) {
+            if (sw) {
+              min = breaking;
+              titlee.innerText = 'Break';
+              a.play();
+            } else {
+              min = session;
+              titlee.innerText = 'Session';
+              a.play();
+            }
+            sw = !sw;
+            s = 0;
+          }
+        }
+
       }, 1000);
     } else {
       clearInterval(inter);
@@ -45,36 +48,57 @@ const App = () => {
   }
   const Restart = () => {
     const titlee = document.getElementById('timer-label');
+    const a = document.getElementById('beep');
     let clock = document.getElementById('time-left');
     titlee.innerText = 'Session';
     clearInterval(inter);
-    min = session-1;
-    s = 60;
+    min = session - 1;
+    s = 59;
     sw = true;
+    sw2 = true;
     setSession(25);
     setBreaking(5);
     clock.innerText = session + ':00';
+    a.pause();
+    a.currentTime = 0;
   }
 
+
+
   return (
-    <div>
-      <h2 id='session-label'>Session Length</h2>
-      <Session session={session} setSession={setSession} />
-      <h2 id='break-label'>Break Length</h2>
-      <Breaking breaking={breaking} setBreaking={setBreaking} />
-      <div id="timer-label">
+    <div className='container'>
+      <div id="timer-label" className='wrapper'>
         Session
       </div>
-      <div id="time-left">
-        {(sw) ? (session<10)? '0'+session + ':00':session + ':00' : (breaking<10)? '0'+breaking + ':00':breaking + ':00' }
+      <div id="time-left" className='wrapper'>
+        {(sw) ? (session < 10) ? '0' + session + ':00' : session + ':00' : (breaking < 10) ? '0' + breaking + ':00' : breaking + ':00'}
       </div>
-      <div>
-        <button id="start_stop" onClick={handleClock}>Play</button>
-        <button id="reset" onClick={Restart}>Restart</button>
+      <div className='wrapper'>
+        <button id="start_stop" onClick={handleClock}><i class="fas fa-play"></i><i class="fas fa-pause"></i></button>
+        <button id="reset" onClick={Restart}><i class="fas fa-power-off"></i></button>
       </div>
+      <div className='controls'>
+        <div className='control-btn'>
+          <h2 id='session-label'>Session Length</h2>
+          <Session session={session} setSession={setSession} />
+        </div>
+        <div className='control-btn'>
+          <h2 id='break-label'>Break Length</h2>
+          <Breaking breaking={breaking} setBreaking={setBreaking} />
+        </div>
+      </div>
+
+
+      <audio
+        id="beep"
+        preload="auto"
+        ref={React.createRef()}
+        src="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"
+      />
     </div>
   )
 }
+
 const Session = ({ session, setSession }) => {
 
   const handleIncrement = () => {
@@ -84,11 +108,11 @@ const Session = ({ session, setSession }) => {
     session > 1 && setSession(session - 1);
   }
   return (
-    <>
-      <button id="session-increment" onClick={handleIncrement}>+</button>
-      <p id="session-length">{session}</p>
-      <button id="session-decrement" onClick={handleDecrement}>-</button>
-    </>
+    <div>
+      <button id="session-increment" onClick={handleIncrement}><i class="fas fa-arrow-up"></i></button>
+      <span id="session-length">{session}</span>
+      <button id="session-decrement" onClick={handleDecrement}><i class="fas fa-arrow-down"></i></button>
+    </div>
   )
 }
 
@@ -100,11 +124,11 @@ const Breaking = ({ breaking, setBreaking }) => {
     breaking > 1 && setBreaking(breaking - 1);
   }
   return (
-    <>
-      <button id="break-increment" onClick={handleIncrement}>+</button>
-      <p id="break-length">{breaking}</p>
-      <button id="break-decrement" onClick={handleDecrement}>-</button>
-    </>
+    <div>
+      <button id="break-increment" onClick={handleIncrement}><i class="fas fa-arrow-up"></i></button>
+      <span id="break-length">{breaking}</span>
+      <button id="break-decrement" onClick={handleDecrement}><i class="fas fa-arrow-down"></i></button>
+    </div>
   )
 }
 
